@@ -4,7 +4,7 @@
 
 These are notes written for internal use. 
 
-
+Pneumonia is in an inflammation of the lung. (SARS-CoV-2) can also result in pneumonia, as it is a virus and in adults, viruses account for about one third of pneumonia cases.  [pulmonary edema](https://en.wikipedia.org/wiki/Pulmonary_edema) is excess fluids in the lung. Unclear if covid can cause pulmonary edma, if so both *pulmonary edema* and *pneumonia* can be byproducts of covid but not necessarily indicators? 
 
 
 
@@ -12,13 +12,11 @@ These are notes written for internal use.
 
 - [ ] gradcam article read
 
-- [ ] understand ***pulmonary edemas*** relation to pneumonia and covid xray data
+- [ ] is there enough data for non-COVID pneumonia cases? 
 
-- [ ] 
+- [ ] transfer learning article read 
 
   
-
-
 
 ## Approach
 
@@ -27,7 +25,8 @@ Our efforts can be separated into three general tasks. We can then compare them 
 * Load ImageNet (VGGNet?) weights and apply transfer learning to covid-19 images
 * Train our own model for pneumonia classifications on x-ray data. Thereafter transfer the learning to COVID 19 cases.
   * Are there pretrained pneumonia classifier models available?
-  * Viable network architecture? 
+  * Is there enough data for non-covid pneumonia cases? 
+  * Viable network architecture? (how deep?)
 * Preprocess and  augment the COVID data set: 
   * Open CV libraries 
   * What is the standard procedure to adapt pretrained models expecting RBG inputs to greyscale? 
@@ -53,8 +52,24 @@ Below are some notes on the resources found along the way.
 
 #### [Detecting COVID-19 induced Pneumonia from Chest X-rays with Transfer Learning: An implementation in Tensorflow and Keras.](https://towardsdatascience.com/detecting-covid-19-induced-pneumonia-from-chest-x-rays-with-transfer-learning-an-implementation-311484e6afc1)
 
-* info
+*  [VGG16 network](https://arxiv.org/pdf/1409.1556.pdf) used for transfer learning 
+* 2 dense layers trained with low learning rate 5e-4 for binary classification, 1E-4 for multi.  
+* combining the [Kaggle Chest X-ray dataset](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia) with the [COVID19 Chest X-ray dataset](https://github.com/ieee8023/covid-chestxray-dataset): 
+  * Healthy: 79 images
+  * Pneumonia (Viral) : 79 images
+  * Pneumonia (Bacterial): 79 images
+  * Pneumonia (COVID-19): 69 images
+  * 9 images / class in test sets.
+
+* cleverly augmenting and improving these results for the multi-class case should be interesting. 
+* original article makes no attempt to augment small datasets.
 
 #### [Grad-CAM: Visualize class activation maps with Keras, TensorFlow, and Deep Learning](https://www.pyimagesearch.com/2020/03/09/grad-cam-visualize-class-activation-maps-with-keras-tensorflow-and-deep-learning/)
 
 * info 
+
+
+
+#### [Improving Classification Accuracy using Data Augmentation & Segmentation: A  hybrid implementation in Keras & Tensorflow using Transfer Learning](https://medium.com/gradientcrescent/improving-classification-accuracy-using-data-augmentation-segmentation-a-hybrid-implementation-8ec29fa97043)
+
+* info
