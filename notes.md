@@ -72,4 +72,18 @@ Below are some notes on the resources found along the way.
 
 #### [Improving Classification Accuracy using Data Augmentation & Segmentation: A  hybrid implementation in Keras & Tensorflow using Transfer Learning](https://medium.com/gradientcrescent/improving-classification-accuracy-using-data-augmentation-segmentation-a-hybrid-implementation-8ec29fa97043)
 
-* info
+* base: MobileNetV2 model, with the top layers relaced with a two densely  connected layers (of size 1024 and 196, respectively), separated by a  50% dropout layer to prevent overfitting.
+*  ADAM optimizer at a learning rate of 0.0002. 50 epochs 
+* *YOLO is itself a InceptionV3-based trained neural network classifier,  and is designed to detect the primary subject of an image, generate a  boundary box for the subject, and then crop out the background.* 
+* The Keras library allows us to utilize traditional physical augmentation methods, such as:
+  * Rescaling
+  * Shear-based transformations
+  * Zoom-based transformations
+  * Translations
+  * Flipping
+
+* Tensorflow library provides more advanced capabilities to modify the  colorspace:
+  * Hue randomization
+  * Saturation randomization
+  * Brightness randomization
+  * Contrast randomization
