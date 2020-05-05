@@ -1,5 +1,9 @@
 # Transfer learning example
 
+## Getting the dataset
+
+Download images from [Kaggle](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia) and unzip it into this folder.
+Then clone [this repository](https://github.com/ieee8023/covid-chestxray-dataset) and execute `build_dataset.py`.
 
 
 ## References
