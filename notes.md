@@ -10,13 +10,7 @@ Pneumonia is in an inflammation of the lung. (SARS-CoV-2) can also result in pne
 
 ## Todo list
 
-- [ ] gradcam article read
-
-- [ ] is there enough data for non-COVID pneumonia cases? 
-
-- [ ] transfer learning article read 
-
-  
+- [ ] 
 
 ## Approach
 
@@ -94,3 +88,15 @@ Below are some notes on the resources found along the way.
 #### [Visualization and Interpretation of Convolutional Neural Network Predictions in Detecting Pneumonia in Pediatric Chest Radiographs](https://www.mdpi.com/2076-3417/8/10/1715)
 
 * Automatically crop a bounding box around the lungs. 
+
+
+
+## Convolution notes
+
+*Every filter is small spatially (along width and height), but extends  through the full depth of the input volume. For example, a typical  filter on a first layer of a ConvNet might have size 5x5x3 (i.e. 5  pixels width and height, and 3 because images have depth 3, the color  channels). During the forward pass, we slide (more precisely, convolve)  each filter across the width and height of the input volume and compute  dot products between the entries of the filter and the input at any  position. As we slide the filter over the width and height of the input  volume we will produce a 2-dimensional activation map that gives the  responses of that filter at every spatial position.*  [source](https://cs231n.github.io/convolutional-networks/)
+
+* that is a 32x32x3 image will have a conv kernel that is for example 5x5xd, where d is the depth of the image(d=3). This block is slide across the image producing a 2 dimensional grid of activations. That constitutes one filter. If we apply 5 (stride=1, zeropadding) filters to a 32x32x3 image we should get an output of dimension 32x32x5.
+
+* Each element in the 2d output of a single conv layer can be seen as the activation of a neuron. It applies the block of weights to the input image. Where the block is applied changes from neuron to neuron but the weights are shared across all the neurons in one layer. 
+* Output dimension is  $( W − F +2 P )/ S +1$	with volume size *W*, the receptive field size of the Conv Layer neurons $F$ , the stride with which they are applied $S$ and the amount of zero padding $P$ used  on the border.
+
