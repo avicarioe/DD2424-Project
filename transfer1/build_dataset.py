@@ -16,7 +16,6 @@ datasetPath = "dataset"
 if os.path.exists(datasetPath):
 	print("Error: dataset already exists")
 	quit(1)
-
 os.makedirs(os.path.sep.join([datasetPath, "normal"]))
 os.makedirs(os.path.sep.join([datasetPath, "covid"]))
 
