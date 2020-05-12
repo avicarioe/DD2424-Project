@@ -12,15 +12,15 @@ img1 = np.expand_dims(img, axis=0)
  
 # create an instance of the class with the desired operation
 datagen = ImageDataGenerator(
-    rotation_range=10,
+    rotation_range=5,
     fill_mode="nearest",
     width_shift_range=0.1,
     height_shift_range=0.1,
-    brightness_range=(0.8,1.2),
+    brightness_range=(0.95,1.05),
     zoom_range=0.2,
     horizontal_flip=1,
-    channel_shift_range=50.0,
-    shear_range=5.0,
+    channel_shift_range=30.0,
+    shear_range=2.0,
     )
 # Depending on the augmentation method you may need to call
 # fit method to calculate the global statistics

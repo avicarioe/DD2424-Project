@@ -18,8 +18,8 @@ from sklearn.utils import class_weight
 
 # parameters:
 LR = 1e-3
-n_epoch = 2
-batch_size = 10
+n_epoch = 10
+batch_size = 8
 
 datasetPath = "dataset"
 print("Loading images..")
@@ -59,21 +59,18 @@ class_weights = class_weight.compute_class_weight('balanced',np.unique(onehot),o
 
 # Initialize the training data augmentation object
 trainAug = ImageDataGenerator(
-    rotation_range=10,
+    rotation_range=5,
     fill_mode="nearest",
     width_shift_range=0.1,
     height_shift_range=0.1,
-    brightness_range=(0.8,1.2),
+    # brightness_range=(0.95,1.05),
     zoom_range=0.2,
     horizontal_flip=1,
-    channel_shift_range=50.0,
-    shear_range=5.0,
+    # channel_shift_range=30.0,
+    shear_range=2.0,
     )
-
 # Load the imageNet weights
-baseModel = VGG16(
-    weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3))
-)
+baseModel = VGG16(weights="imagenet", include_top=False, input_tensor=Input(shape=(224, 224, 3)))
 
 # Build the train model
 headModel = baseModel.output
@@ -85,11 +82,9 @@ headModel = Dropout(0.5)(headModel)
 headModel = Dense(2, activation="softmax")(headModel)
 model = Model(inputs=baseModel.input, outputs=headModel)
 
-# Freeze base layers
 for layer in baseModel.layers:
     layer.trainable = False
 
-print("Compiling model...")
 opt = Adam(lr=LR, decay=LR / n_epoch)
 model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
 
