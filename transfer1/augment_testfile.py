@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import keras
 from keras.preprocessing.image import load_img, ImageDataGenerator, img_to_array
- 
+#  this is not my code. Borrowed as test script only. Not for publishing. 
+
 # Load the image and change it into an array and expand the dimensions
 # img = load_img('snail.jpg')
 img = load_img('test_ray.jpg')
