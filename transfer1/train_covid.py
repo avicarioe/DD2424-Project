@@ -18,7 +18,7 @@ from sklearn.utils import class_weight
 
 # parameters:
 LR = 1e-3
-n_epoch = 5
+n_epoch = 2
 batch_size = 10
 
 datasetPath = "dataset"
@@ -58,8 +58,17 @@ class_weights = class_weight.compute_class_weight('balanced',np.unique(onehot),o
 
 
 # Initialize the training data augmentation object
-trainAug = ImageDataGenerator(rotation_range=15, fill_mode="nearest")
-
+trainAug = ImageDataGenerator(
+    rotation_range=10,
+    fill_mode="nearest",
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    brightness_range=(0.8,1.2),
+    zoom_range=0.2,
+    horizontal_flip=1,
+    channel_shift_range=50.0,
+    shear_range=5.0,
+    )
 
 # Load the imageNet weights
 baseModel = VGG16(
@@ -87,7 +96,11 @@ model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
 # Train
 print("Training head")
 H = model.fit(
-    x=trainAug.flow(trainX, trainY, batch_size=batch_size),
+    x=trainAug.flow(
+        trainX,
+        trainY,
+        batch_size=batch_size,
+        ),
     steps_per_epoch=len(trainX) // batch_size,
     validation_data=(valX, valY),
     validation_steps=len(testX) // batch_size,
