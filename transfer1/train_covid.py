@@ -1,6 +1,5 @@
 import argparse
 import os
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,15 +9,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.layers import AveragePooling2D, Dense, Dropout, Flatten, Input
-# from keras.layers.convolutional import MaxPooling2D
+from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import to_categorical
+from sklearn.utils import class_weight
 
+# parameters:
 LR = 1e-3
-n_epoch = 2
-batch_size = 8
+n_epoch = 5
+batch_size = 10
 
 datasetPath = "dataset"
 print("Loading images..")
@@ -38,26 +39,27 @@ for p in imagePaths:
     data.append(image)
     labels.append(label)
 
+# One-hot encoding (index 0:= covid ,1 := noncovid)
 data = np.array(data) / 255.0
 labels = np.array(labels)
-
-# One-hot encoding
 lb = LabelBinarizer()
 labels = lb.fit_transform(labels)
 labels = to_categorical(labels)
 
-# print(labels)
-# exit()
 
-# split into train/validation/test. 80:20 train:test, and 90:10 train:vali
+# split into sets.train: 0.8, test: 0.1, validate: 0.1 
 trainX, testX, trainY, testY = train_test_split(
-    data, labels, test_size=0.20, stratify=labels, random_state=0)
-
+    data, labels, test_size=0.10, stratify=labels, random_state=0)
 trainX, valX, trainY, valY = train_test_split(
-    trainX, trainY, test_size=0.1, stratify=trainY, random_state=0)
+    trainX, trainY, test_size=1/9, stratify=trainY, random_state=0)
+
+onehot = [i.argmax() for i in trainY]
+class_weights = class_weight.compute_class_weight('balanced',np.unique(onehot),onehot)
+
 
 # Initialize the training data augmentation object
 trainAug = ImageDataGenerator(rotation_range=15, fill_mode="nearest")
+
 
 # Load the imageNet weights
 baseModel = VGG16(
@@ -66,7 +68,8 @@ baseModel = VGG16(
 
 # Build the train model
 headModel = baseModel.output
-headModel = AveragePooling2D(pool_size=(4, 4))(headModel)
+# headModel = AveragePooling2D(pool_size=(4, 4))(headModel)
+headModel = MaxPooling2D(pool_size=(4, 4))(headModel)
 headModel = Flatten(name="flatten")(headModel)
 headModel = Dense(64, activation="relu")(headModel)
 headModel = Dropout(0.5)(headModel)
@@ -89,6 +92,7 @@ H = model.fit(
     validation_data=(valX, valY),
     validation_steps=len(testX) // batch_size,
     epochs=n_epoch,
+    class_weight = class_weights
 )
 
 print("Evaluate network")

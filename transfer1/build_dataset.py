@@ -47,7 +47,7 @@ for (i, row) in df.iterrows():
 # randomly sample the image paths
 random.seed(0)
 random.shuffle(imagePaths)
-n_kaggle = min(n_covid, len(imagePaths))
+n_kaggle = 5 * min(n_covid, len(imagePaths))
 imagePaths = imagePaths[:n_kaggle]
 
 # Construct the path to the copied image
