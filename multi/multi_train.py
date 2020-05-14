@@ -14,13 +14,13 @@ from sklearn.utils import class_weight
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import AveragePooling2D, Dense, Dropout, Flatten, MaxPooling2D, Input
+from tensorflow.keras.layers import AveragePooling2D, Dense, Dropout, Flatten, MaxPooling2D, Input, Conv2D
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
 
 n_epoch = 5
-batch_size = 8
+batch_size = 32
 LR = 1e-3
 
 train_path = 'dataset/train'
@@ -28,7 +28,7 @@ val_path ='dataset/val'
 test_path='dataset/test'
 
 print("Loading data")
-imagesize = 100
+imagesize = 300
 
 def loadImages(path):
     data = []
@@ -52,27 +52,26 @@ def loadImages(path):
 
     return data, labels
 
+
 encoder = LabelEncoder()
-num_classes = 3
 
-trainX, labels = loadImages(train_path)
-trainX = np.array(trainX) / 255.0
-labels = np.array(labels)
-
-labels = encoder.fit_transform(labels)
-trainY = to_categorical(labels, num_classes=num_classes)
-
-valX, labels = loadImages(val_path)
+valX, valL = loadImages(val_path)
 valX = np.array(valX) / 255.0
-labels = np.array(labels)
+valL = np.array(valL)
 
-labels = encoder.fit_transform(labels)
-valY = to_categorical(labels, num_classes=num_classes)
 
-y_integers = np.argmax(trainY, axis=1)
-class_weights = class_weight.compute_class_weight('balanced', np.unique(y_integers), y_integers)
-class_weights = dict(enumerate(class_weights))
-print(class_weights)
+valL = encoder.fit_transform(valL)
+classes = list(encoder.classes_)
+print(classes)
+valY = to_categorical(valL, num_classes=len(classes))
+
+
+#y_integers = np.argmax(trainY, axis=1)
+#class_weights = class_weight.compute_class_weight('balanced', np.unique(y_integers), y_integers)
+#class_weights = dict(enumerate(class_weights))
+#print(class_weights)
+
+class_weights = {0: 1.3, 1: 0.45, 2: 15}
 
 # Initialize the training data augmentation object
 trainAug = ImageDataGenerator(
@@ -86,16 +85,19 @@ trainAug = ImageDataGenerator(
     # channel_shift_range=30.0,
     shear_range=2.0)
 
+valAug = ImageDataGenerator();
+
 ## Load the imageNet weights
 baseModel = VGG16(weights="imagenet", include_top=False,
         input_tensor=Input(shape=(imagesize, imagesize, 3)))
 headModel = baseModel.output
 
 headModel = MaxPooling2D(pool_size=(3, 3))(headModel)
+#headModel = Conv2D(100, kernel_size = (3,3), padding = 'valid')(headModel)
 headModel = Flatten()(headModel)
 headModel = Dense(64, activation="relu")(headModel)
 headModel = Dropout(0.5)(headModel)
-headModel = Dense(num_classes, activation='softmax')(headModel)
+headModel = Dense(len(classes), activation='softmax')(headModel)
 
 model = Model(inputs=baseModel.input, outputs=headModel)
 
@@ -108,53 +110,28 @@ model.compile(loss='categorical_crossentropy',
         optimizer=opt, metrics=['accuracy'])
 model.summary()
 
-H = model.fit(x=trainAug.flow(trainX, trainY, batch_size=batch_size),
+train = trainAug.flow_from_directory(
+    train_path,
+    classes=classes,
+    batch_size=batch_size,
+    target_size=(imagesize, imagesize),
+    shuffle=True)
+
+val = valAug.flow_from_directory(
+    val_path,
+    classes=classes,
+    batch_size=batch_size,
+    target_size=(imagesize, imagesize))
+
+H = model.fit(
+        x=train,
         epochs=n_epoch, 
-        steps_per_epoch=len(trainX) // batch_size,
-        batch_size = batch_size,
-        validation_data=(valX, valY), 
-        validation_steps=len(valX) // batch_size,
-        class_weight=class_weights)
+        steps_per_epoch=len(train),
+        batch_size=batch_size,
+        validation_data=val,
+        validation_steps=len(val))
+        #class_weight=class_weights)
 
+print("Save model")
 model.save("multi.model", save_format="h5")
-
-print("Evaluate network")
-
-testX, labels = loadImages(test_path)
-testX = np.array(testX) / 255.0
-labels = np.array(labels)
-
-labels = encoder.fit_transform(labels)
-testY = to_categorical(labels, num_classes=num_classes)
-
-predIdxs = model.predict(testX, batch_size=batch_size)
-predIdxs = np.argmax(predIdxs, axis=1)
-
-print(classification_report(testY.argmax(axis=1), predIdxs, target_names=encoder.classes_))
-
-# Compute accuracy, sensitivity, and specificity
-cm = confusion_matrix(testY.argmax(axis=1), predIdxs)
-total = sum(sum(cm))
-acc = (cm[0, 0] + cm[1, 1]) / total
-sensitivity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
-specificity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
-
-print(cm)
-print("acc: {:.4f}".format(acc))
-print("sensitivity: {:.4f}".format(sensitivity))
-print("specificity: {:.4f}".format(specificity))
-
-# Plot the training loss and accuracy
-plt.style.use("ggplot")
-fig = plt.figure()
-plt.plot(H.history["loss"], label="train_loss")
-plt.plot(H.history["val_loss"], label="val_loss")
-plt.plot(H.history["accuracy"], label="train_acc")
-plt.plot(H.history["val_accuracy"], label="val_acc")
-plt.title("Training Loss and Accuracy on COVID-19 Dataset")
-plt.xlabel("Epoch #")
-plt.ylabel("Loss/Accuracy")
-plt.legend(loc="lower left")
-fig.set_size_inches((7, 6))
-
 fig.savefig("plot.pdf", format="pdf", dpi=300, trasparent=True)
