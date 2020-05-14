@@ -1,44 +1,23 @@
 import numpy as np
 import os
 import cv2
+import random
 
 from imutils import paths
 from tqdm import tqdm
 
-import itertools
-import fnmatch
-import random
-
 import matplotlib.pylab as plt
-import seaborn as sns
-from scipy import misc
-import sklearn
-from sklearn import model_selection
-from sklearn.model_selection import train_test_split, KFold, cross_val_score, StratifiedKFold, learning_curve, GridSearchCV
-from sklearn.metrics import confusion_matrix, make_scorer, accuracy_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC, LinearSVC
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from tensorflow.keras import backend as K
-from tensorflow.keras.callbacks import Callback, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Model,Sequential, model_from_json
-from tensorflow.keras.optimizers import SGD, RMSprop, Adam, Adagrad, Adadelta
-from tensorflow.keras.layers import AveragePooling2D, Dense, Dropout, Activation, Flatten, BatchNormalization, Conv2D, MaxPool2D, MaxPooling2D, Flatten, Input
-from tensorflow.keras.preprocessing.image import array_to_img, img_to_array, load_img, ImageDataGenerator
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.callbacks import Callback, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
+from sklearn.utils import class_weight
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import AveragePooling2D, Dense, Dropout, Flatten, MaxPooling2D, Input
 from tensorflow.keras.applications import VGG16
-from tensorflow.keras.applications.vgg16 import preprocess_input
-from sklearn.preprocessing import LabelBinarizer
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
-from sklearn.utils import class_weight
 
 n_epoch = 5
 batch_size = 8
@@ -74,7 +53,7 @@ def loadImages(path):
     return data, labels
 
 encoder = LabelEncoder()
-num_classes = 4
+num_classes = 3
 
 trainX, labels = loadImages(train_path)
 trainX = np.array(trainX) / 255.0
@@ -137,6 +116,8 @@ H = model.fit(x=trainAug.flow(trainX, trainY, batch_size=batch_size),
         validation_steps=len(valX) // batch_size,
         class_weight=class_weights)
 
+model.save("multi.model", save_format="h5")
+
 print("Evaluate network")
 
 testX, labels = loadImages(test_path)
@@ -177,4 +158,3 @@ plt.legend(loc="lower left")
 fig.set_size_inches((7, 6))
 
 fig.savefig("plot.pdf", format="pdf", dpi=300, trasparent=True)
-model.save("multi.model", save_format="h5")

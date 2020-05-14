@@ -74,8 +74,7 @@ intestPath = os.path.sep.join([kagglePath, "test"])
 
 def copy_kaggle(inpath, outpath):
     os.makedirs(os.path.sep.join([outpath, "normal"]))
-    os.makedirs(os.path.sep.join([outpath, "virus"]))
-    os.makedirs(os.path.sep.join([outpath, "bacteria"]))
+    os.makedirs(os.path.sep.join([outpath, "pneumonia"]))
 
     normalPath = os.path.sep.join([inpath, "NORMAL"])
     pneumoniaPath = os.path.sep.join([inpath, "PNEUMONIA"])
@@ -98,22 +97,14 @@ def copy_kaggle(inpath, outpath):
     for image in pneumoniaIm:
         filename = image.split(os.path.sep)[-1]
 
-        if "bacteria" in filename:
-            outputPath = os.path.sep.join([outpath, "bacteria", filename])
-            n_bacteria += 1
-        elif "virus" in filename:
-            outputPath = os.path.sep.join([outpath, "virus", filename])
-            n_virus += 1
-        else:
-            continue
+        outputPath = os.path.sep.join([outpath, "pneumonia", filename])
 
         #print(filename)
 
         shutil.copy2(image, outputPath)
 
     print("Normal: ", len(normalIm))
-    print("Bacteria: ", n_bacteria)
-    print("Virus: ", n_virus)
+    print("Pneumonia: ", len(pneumoniaIm))
 
 print("Train:")
 copy_img(covid_train, trainPath)
