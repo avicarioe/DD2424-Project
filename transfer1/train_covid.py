@@ -48,15 +48,22 @@ for p in imagePaths:
 data = np.array(data) / 255.0
 labels = np.array(labels)
 
+print("All data", len(data))
+
 # One-hot encoding
 lb = LabelBinarizer()
 labels = lb.fit_transform(labels)
 labels = to_categorical(labels)
 
-# 80% of the data for training
+# split into sets.train: 0.8, test: 0.1, validate: 0.1 
 trainX, testX, trainY, testY = train_test_split(
-    data, labels, test_size=0.20, stratify=labels, random_state=0
-)
+    data, labels, test_size=0.10, stratify=labels, random_state=0)
+trainX, valX, trainY, valY = train_test_split(
+    trainX, trainY, test_size=1/9, stratify=trainY, random_state=0)
+
+print("Train:", len(trainX))
+print("Val:", len(valX))
+print("Test:", len(testX))
 
 # Initialize the training data augmentation object
 trainAug = ImageDataGenerator(rotation_range=15, fill_mode="nearest")
@@ -88,9 +95,9 @@ model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
 print("Training head")
 H = model.fit(
     x=trainAug.flow(trainX, trainY, batch_size=batch_size),
-    # x = trainX, y = trainY,
+    #x = trainX, y = trainY,
     steps_per_epoch=len(trainX) // batch_size,
-    validation_data=(testX, testY),
+    validation_data=(valX, valY),
     validation_steps=len(testX) // batch_size,
     epochs=n_epoch,
 )
@@ -124,4 +131,4 @@ plt.ylabel("Loss/Accuracy")
 plt.legend(loc="lower left")
 fig.set_size_inches((7, 6))
 fig.savefig("aug_plot.pdf", format="pdf", dpi=300, trasparent=True)
-model.save("aug_covid.model", save_format="h5")
+model.save("aug_model.model", save_format="h5")
